@@ -20,27 +20,71 @@ A diferencia de una matriz densa tradicional (bidimensional), nuestra estructura
 El uso de punteros `nextInRow` y `nextInCol`, junto con **nodos cabecera** para cada fila y columna activa, permite que las operaciones de inserción y eliminación se realicen con un costo de **$O(k)$**, donde $k$ representa el número de elementos con datos en la fila o columna respectiva. Esto es significativamente más eficiente que recorrer una matriz densa de tamaño $n \times m$.
 
 ## 3. Instrucciones de Compilación y Ejecución
-La aplicación ha sido desarrollada en **C++17** utilizando la biblioteca gráfica **[Especificar aquí: Qt / SFML / wxWidgets]**.
 
-### Requisitos previos:
-*   Compilador compatible con C++17 (GCC, Clang o MSVC).
-*   Librería [Nombre de la librería GUI] instalada.
+La aplicación ha sido desarrollada en **C++17** con interfaz gráfica en **Qt6**.
 
-### Pasos para compilar:
+### Requisitos previos
+
+- Compilador compatible con C++17 (GCC o Clang)
+- Qt6 instalado
+- `bear` (opcional, solo para IntelliSense en el IDE)
+
+---
+
+### Linux (Fedora/Ubuntu)
+
+**Instalar Qt6:**
 ```bash
-# Ejemplo si usas Makefile
-make all
+# Fedora
+sudo dnf install qt6-qtbase-devel qt6-qtwidgets-devel
 
-# Ejemplo si usas CMake
-mkdir build && cd build
-cmake ..
-make
+# Ubuntu/Debian
+sudo apt install qt6-base-dev
 ```
 
-### Pasos para ejecutar:
+**Compilar y ejecutar:**
 ```bash
-./hoja_calculo_ejecutable
+make run
 ```
+
+---
+
+### Windows
+
+**Instalar Qt6:**
+1. Descarga el instalador desde https://www.qt.io/download-open-source
+2. Instala Qt 6.x con el componente **MinGW** incluido
+3. Agrega al PATH: `C:\Qt\6.x.x\mingw_64\bin` y `C:\Qt\Tools\mingw_xx\bin`
+
+**Compilar y ejecutar:**
+```bash
+mingw32-make -f Makefile
+spreadsheet.exe
+```
+
+O desde Qt Creator: File → Open → selecciona el `CMakeLists.txt`.
+
+---
+
+### macOS
+
+**Instalar Qt6:**
+```bash
+brew install qt6
+```
+
+**Compilar y ejecutar:**
+```bash
+export PATH="/opt/homebrew/opt/qt/bin:$PATH"
+make run
+```
+
+---
+
+### Nota sobre el Makefile
+
+El `Makefile` usa `pkg-config` para detectar Qt6 automáticamente en Linux y macOS.
+En Windows se recomienda usar **Qt Creator** para abrir el proyecto directamente.
 
 ## 4. Análisis de Complejidad
 Basándonos en la implementación de listas enlazadas cruzadas, la complejidad asintótica de las operaciones clave es la siguiente:
