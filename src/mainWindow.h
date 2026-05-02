@@ -1,31 +1,34 @@
 #pragma once
-#include <QMainWindow>
-#include <QTableWidget>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QLabel>
 #include "spreadSheet.h"
+#include <QLabel>
+#include <QLineEdit>
+#include <QMainWindow>
+#include <QPushButton>
+#include <QTableWidget>
 
 class MainWindow : public QMainWindow {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    MainWindow(QWidget* parent = nullptr);
-    ~MainWindow();
+  MainWindow(QWidget *parent = nullptr);
+  ~MainWindow();
 
 private slots:
-    void onCellChanged(int row, int col);
-    void onDeleteRow();
-    void onDeleteCol();
-    void onSumRange();
+  void onCellChanged(int row, int col);
+  void onDeleteRow();
+  void onDeleteCol();
+  void onSumRange();
+  void onAvgRange();
+  void onMaxRange();
+  void onMinRange();
 
 private:
-    SpreadSheet* sheet;
-    QTableWidget* table;
-    QLineEdit* formulaBar;
-    QLabel* statusLabel;
+  SpreadSheet *sheet;
+  QTableWidget *table;
+  QLineEdit *formulaBar;
+  QLabel *statusLabel;
 
-    void setupUI();
-    void syncToTable();
-    std::string evalFormula(const std::string& formula);
+  void setupUI();
+  void syncToTable();
+  std::string evalFormula(const std::string &formula);
 };

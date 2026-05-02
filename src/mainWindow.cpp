@@ -53,10 +53,16 @@ void MainWindow::setupUI() {
     QPushButton* btnDelRow = new QPushButton("Eliminar Fila", this);
     QPushButton* btnDelCol = new QPushButton("Eliminar Columna", this);
     QPushButton* btnSum    = new QPushButton("Suma Rango", this);
+    QPushButton* btnAvg = new QPushButton("Promedio Rango", this);
+    QPushButton* btnMax = new QPushButton("Máximo Rango",   this);
+    QPushButton* btnMin = new QPushButton("Mínimo Rango",   this);
     btnLayout->addWidget(btnDelRow);
     btnLayout->addWidget(btnDelCol);
     btnLayout->addWidget(btnSum);
     mainLayout->addLayout(btnLayout);
+    btnLayout->addWidget(btnAvg);
+    btnLayout->addWidget(btnMax);
+    btnLayout->addWidget(btnMin);
 
     // status bar
     statusLabel = new QLabel("Listo", this);
@@ -67,6 +73,9 @@ void MainWindow::setupUI() {
     connect(btnDelRow, &QPushButton::clicked, this, &MainWindow::onDeleteRow);
     connect(btnDelCol, &QPushButton::clicked, this, &MainWindow::onDeleteCol);
     connect(btnSum,    &QPushButton::clicked, this, &MainWindow::onSumRange);
+    connect(btnAvg, &QPushButton::clicked, this, &MainWindow::onAvgRange);
+    connect(btnMax, &QPushButton::clicked, this, &MainWindow::onMaxRange);
+    connect(btnMin, &QPushButton::clicked, this, &MainWindow::onMinRange);
 }
 
 void MainWindow::onCellChanged(int row, int col) {
@@ -128,39 +137,6 @@ void MainWindow::onDeleteCol() {
     statusLabel->setText(QString("Columna %1 eliminada").arg(col));
 }
 
-void MainWindow::onSumRange() {
-    // pide rango al usuario tipo "A1:C3"
-    bool ok;
-    QString input = QInputDialog::getText(this, "Suma de Rango",
-        "Ingresa rango (ej: A1:C3):", QLineEdit::Normal, "", &ok);
-    if (!ok || input.isEmpty()) return;
-
-    // parsea el rango
-    QStringList parts = input.toUpper().split(":");
-    if (parts.size() != 2) {
-        statusLabel->setText("Rango invalido");
-        return;
-    }
-
-    auto parseRef = [](const QString& ref, int& row, int& col) {
-        if (ref.isEmpty()) return false;
-        col = ref[0].toLatin1() - 'A';
-        row = ref.mid(1).toInt() - 1;
-        return col >= 0 && col < 26 && row >= 0;
-    };
-
-    int r1, c1, r2, c2;
-    if (!parseRef(parts[0], r1, c1) || !parseRef(parts[1], r2, c2)) {
-        statusLabel->setText("Rango invalido");
-        return;
-    }
-
-    double result = sheet->sumRange(r1, c1, r2, c2);
-    QMessageBox::information(this, "Resultado",
-        QString("SUMA(%1) = %2").arg(input).arg(result));
-    statusLabel->setText(QString("SUMA(%1) = %2").arg(input).arg(result));
-}
-
 std::string MainWindow::evalFormula(const std::string& formula) {
     // parser simple: =A1+B1, =A1*2, etc.
     // por ahora devuelve la formula sin el = para mostrar algo
@@ -208,4 +184,91 @@ std::string MainWindow::evalFormula(const std::string& formula) {
     std::ostringstream oss;
     oss << result;
     return oss.str();
+}
+
+// helper interno para no repetir el parsing del rango
+static bool parseRange(const QString& input, int& r1, int& c1, int& r2, int& c2) {
+    QStringList parts = input.toUpper().split(":");
+    if (parts.size() != 2) return false;
+
+    auto parseRef = [](const QString& ref, int& row, int& col) {
+        if (ref.isEmpty()) return false;
+        col = ref[0].toLatin1() - 'A';
+        row = ref.mid(1).toInt() - 1;
+        return col >= 0 && col < 26 && row >= 0;
+    };
+
+    return parseRef(parts[0], r1, c1) && parseRef(parts[1], r2, c2);
+}
+
+void MainWindow::onAvgRange() {
+    bool ok;
+    QString input = QInputDialog::getText(this, "Promedio de Rango",
+        "Ingresa rango (ej: A1:C3):", QLineEdit::Normal, "", &ok);
+    if (!ok || input.isEmpty()) return;
+
+    int r1, c1, r2, c2;
+    if (!parseRange(input, r1, c1, r2, c2)) {
+        statusLabel->setText("Rango invalido");
+        return;
+    }
+
+    double result = sheet->avgRange(r1, c1, r2, c2);
+    QMessageBox::information(this, "Resultado",
+        QString("PROMEDIO(%1) = %2").arg(input).arg(result));
+    statusLabel->setText(QString("PROMEDIO(%1) = %2").arg(input).arg(result));
+}
+
+void MainWindow::onMaxRange() {
+    bool ok;
+    QString input = QInputDialog::getText(this, "Máximo de Rango",
+        "Ingresa rango (ej: A1:C3):", QLineEdit::Normal, "", &ok);
+    if (!ok || input.isEmpty()) return;
+
+    int r1, c1, r2, c2;
+    if (!parseRange(input, r1, c1, r2, c2)) {
+        statusLabel->setText("Rango invalido");
+        return;
+    }
+
+    double result = sheet->maxRange(r1, c1, r2, c2);
+    QMessageBox::information(this, "Resultado",
+        QString("MÁXIMO(%1) = %2").arg(input).arg(result));
+    statusLabel->setText(QString("MÁXIMO(%1) = %2").arg(input).arg(result));
+}
+
+void MainWindow::onMinRange() {
+    bool ok;
+    QString input = QInputDialog::getText(this, "Mínimo de Rango",
+        "Ingresa rango (ej: A1:C3):", QLineEdit::Normal, "", &ok);
+    if (!ok || input.isEmpty()) return;
+
+    int r1, c1, r2, c2;
+    if (!parseRange(input, r1, c1, r2, c2)) {
+        statusLabel->setText("Rango invalido");
+        return;
+    }
+
+    double result = sheet->minRange(r1, c1, r2, c2);
+    QMessageBox::information(this, "Resultado",
+        QString("MÍNIMO(%1) = %2").arg(input).arg(result));
+    statusLabel->setText(QString("MÍNIMO(%1) = %2").arg(input).arg(result));
+}
+
+void MainWindow::onSumRange() {
+    bool ok;
+    QString input = QInputDialog::getText(this, "Suma de Rango",
+        "Ingresa rango (ej: A1:C3):", QLineEdit::Normal, "", &ok);
+    if (!ok || input.isEmpty()) return;
+
+    int r1, c1, r2, c2;
+    if (!parseRange(input, r1, c1, r2, c2)) {
+        statusLabel->setText("Rango invalido");
+        return;
+    }
+
+    double result = sheet->sumRange(r1, c1, r2, c2);
+    QMessageBox::information(this, "Resultado",
+        QString("SUMA(%1) = %2").arg(input).arg(result));
+    statusLabel->setText(QString("SUMA(%1) = %2").arg(input).arg(result));
 }
