@@ -1,25 +1,40 @@
 #pragma once
+
+#include "spreadSheet.h"
+
+#include <QLabel>
+#include <QLineEdit>
 #include <QMainWindow>
 #include <QTableWidget>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QLabel>
-#include "spreadSheet.h"
+#include <string>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget* parent = nullptr);
-    ~MainWindow();
-
-private slots:
-    void onCellChanged(int row, int col);
-    void onDeleteRow();
-    void onDeleteCol();
-    void onSumRange();
+    explicit MainWindow(QWidget* parent = nullptr);
+    ~MainWindow() override;
 
 private:
+    void onCellChanged(int row, int col);
+    void onCurrentCellChanged(int currentRow, int currentCol, int previousRow, int previousCol);
+    void onApplyFormulaBar();
+    void onConsultCell();
+    void onDeleteCell();
+    void onDeleteRow();
+    void onDeleteCol();
+    void onDeleteRange();
+    void onSumRow();
+    void onSumCol();
+    void onSumRange();
+    void onAverageRange();
+    void onMaxRange();
+    void onMinRange();
+
+private:
+    static constexpr int TABLE_ROWS = 50;
+    static constexpr int TABLE_COLS = 26;
+
     SpreadSheet* sheet;
     QTableWidget* table;
     QLineEdit* formulaBar;
@@ -27,5 +42,15 @@ private:
 
     void setupUI();
     void syncToTable();
-    std::string evalFormula(const std::string& formula);
+    void refreshCell(int row, int col);
+    void showMessage(const QString& title, const QString& text);
+
+    QString cellName(int row, int col) const;
+    bool parseCellRef(const QString& text, int& row, int& col) const;
+    bool parseRange(const QString& text, int& r1, int& c1, int& r2, int& c2) const;
+    QString askRange(const QString& title) const;
+
+    bool evalFormula(const std::string& formula, std::string& result) const;
+    bool resolveOperand(const std::string& text, double& value) const;
+    static std::string trim(const std::string& text);
 };
