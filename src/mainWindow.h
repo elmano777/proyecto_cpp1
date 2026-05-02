@@ -20,6 +20,8 @@ private:
     void onCurrentCellChanged(int currentRow, int currentCol, int previousRow, int previousCol);
     void onApplyFormulaBar();
     void onConsultCell();
+    void onInsertCell();
+    void onModifyCell();
     void onDeleteCell();
     void onDeleteRow();
     void onDeleteCol();
@@ -27,7 +29,7 @@ private:
     void onSumRow();
     void onSumCol();
     void onSumRange();
-    void onAverageRange();
+    void onAvgRange();
     void onMaxRange();
     void onMinRange();
 

@@ -16,7 +16,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <iomanip>
 #include <sstream>
 
 MainWindow::MainWindow(QWidget* parent)
@@ -63,6 +62,8 @@ void MainWindow::setupUI() {
     QGridLayout* buttonLayout = new QGridLayout();
 
     QPushButton* consultButton = new QPushButton("Consultar celda", this);
+    QPushButton* insertCellButton = new QPushButton("Insertar celda", this);
+    QPushButton* modifyCellButton = new QPushButton("Modificar celda", this);
     QPushButton* deleteCellButton = new QPushButton("Eliminar celda", this);
     QPushButton* deleteRowButton = new QPushButton("Eliminar fila", this);
     QPushButton* deleteColButton = new QPushButton("Eliminar columna", this);
@@ -76,10 +77,12 @@ void MainWindow::setupUI() {
     QPushButton* minRangeButton = new QPushButton("MÍN rango", this);
 
     buttonLayout->addWidget(consultButton, 0, 0);
-    buttonLayout->addWidget(deleteCellButton, 0, 1);
-    buttonLayout->addWidget(deleteRowButton, 0, 2);
-    buttonLayout->addWidget(deleteColButton, 0, 3);
-    buttonLayout->addWidget(deleteRangeButton, 0, 4);
+    buttonLayout->addWidget(insertCellButton, 0, 1);
+    buttonLayout->addWidget(modifyCellButton, 0, 2);
+    buttonLayout->addWidget(deleteCellButton, 0, 3);
+    buttonLayout->addWidget(deleteRowButton, 2, 0);
+    buttonLayout->addWidget(deleteColButton, 2, 1);
+    buttonLayout->addWidget(deleteRangeButton, 2, 2);
 
     buttonLayout->addWidget(sumRowButton, 1, 0);
     buttonLayout->addWidget(sumColButton, 1, 1);
@@ -99,6 +102,8 @@ void MainWindow::setupUI() {
     connect(formulaBar, &QLineEdit::returnPressed, this, &MainWindow::onApplyFormulaBar);
 
     connect(consultButton, &QPushButton::clicked, this, &MainWindow::onConsultCell);
+    connect(insertCellButton, &QPushButton::clicked, this, &MainWindow::onInsertCell);
+    connect(modifyCellButton, &QPushButton::clicked, this, &MainWindow::onModifyCell);
     connect(deleteCellButton, &QPushButton::clicked, this, &MainWindow::onDeleteCell);
     connect(deleteRowButton, &QPushButton::clicked, this, &MainWindow::onDeleteRow);
     connect(deleteColButton, &QPushButton::clicked, this, &MainWindow::onDeleteCol);
@@ -106,7 +111,7 @@ void MainWindow::setupUI() {
     connect(sumRowButton, &QPushButton::clicked, this, &MainWindow::onSumRow);
     connect(sumColButton, &QPushButton::clicked, this, &MainWindow::onSumCol);
     connect(sumRangeButton, &QPushButton::clicked, this, &MainWindow::onSumRange);
-    connect(avgRangeButton, &QPushButton::clicked, this, &MainWindow::onAverageRange);
+    connect(avgRangeButton, &QPushButton::clicked, this, &MainWindow::onAvgRange);
     connect(maxRangeButton, &QPushButton::clicked, this, &MainWindow::onMaxRange);
     connect(minRangeButton, &QPushButton::clicked, this, &MainWindow::onMinRange);
 }
@@ -195,6 +200,54 @@ void MainWindow::onConsultCell() {
         value = "<vacía>";
     }
     showMessage("Consulta", QString("%1 = %2").arg(cellName(row, col), value));
+}
+
+void MainWindow::onInsertCell() {
+    bool ok = false;
+    QString cellRef = QInputDialog::getText(this, "Insertar celda", "Referencia (ej: B3):", QLineEdit::Normal, "A1", &ok);
+    if (!ok || cellRef.isEmpty()) return;
+
+    int row = 0;
+    int col = 0;
+    if (!parseCellRef(cellRef, row, col)) {
+        showMessage("Referencia inválida", "Usa una referencia como A1, B3 o Z100.");
+        return;
+    }
+
+    QString value = QInputDialog::getText(this, "Insertar celda",
+        QString("Valor para %1:").arg(cellName(row, col)), QLineEdit::Normal, "", &ok);
+    if (!ok) return;
+
+    sheet->insertCell(row, col, value.toStdString());
+    refreshCell(row, col);
+    statusLabel->setText(QString("%1 = %2").arg(cellName(row, col), value));
+}
+
+void MainWindow::onModifyCell() {
+    bool ok = false;
+    QString cellRef = QInputDialog::getText(this, "Modificar celda", "Referencia (ej: B3):", QLineEdit::Normal, "A1", &ok);
+    if (!ok || cellRef.isEmpty()) return;
+
+    int row = 0;
+    int col = 0;
+    if (!parseCellRef(cellRef, row, col)) {
+        showMessage("Referencia inválida", "Usa una referencia como A1, B3 o Z100.");
+        return;
+    }
+
+    if (!sheet->cellExists(row, col)) {
+        showMessage("Celda vacía", QString("%1 no tiene valor. Usa 'Insertar celda'.").arg(cellName(row, col)));
+        return;
+    }
+
+    QString currentValue = QString::fromStdString(sheet->getCell(row, col));
+    QString newValue = QInputDialog::getText(this, "Modificar celda",
+        QString("Nuevo valor para %1:").arg(cellName(row, col)), QLineEdit::Normal, currentValue, &ok);
+    if (!ok) return;
+
+    sheet->modifyCell(row, col, newValue.toStdString());
+    refreshCell(row, col);
+    statusLabel->setText(QString("%1 = %2").arg(cellName(row, col), newValue));
 }
 
 void MainWindow::onDeleteCell() {
@@ -289,7 +342,7 @@ void MainWindow::onSumRange() {
     showMessage("SUMA rango", QString("SUMA(%1) = %2").arg(input.toUpper()).arg(result));
 }
 
-void MainWindow::onAverageRange() {
+void MainWindow::onAvgRange() {
     QString input = askRange("PROMEDIO rango");
     if (input.isEmpty()) return;
 
@@ -349,7 +402,6 @@ void MainWindow::syncToTable() {
 
     for (const CellInfo& cell : sheet->getOccupiedCells()) {
         QTableWidgetItem* item = new QTableWidgetItem(QString::fromStdString(cell.value));
-        item->setBackground(QBrush(QColor(215, 245, 215)));
         table->setItem(cell.row, cell.col, item);
     }
 }
@@ -376,7 +428,6 @@ void MainWindow::refreshCell(int row, int col) {
         table->setItem(row, col, item);
     }
     item->setText(value);
-    item->setBackground(QBrush(QColor(215, 245, 215)));
 }
 
 void MainWindow::showMessage(const QString& title, const QString& text) {
@@ -576,76 +627,4 @@ static bool parseRange(const QString& input, int& r1, int& c1, int& r2, int& c2)
     };
 
     return parseRef(parts[0], r1, c1) && parseRef(parts[1], r2, c2);
-}
-
-void MainWindow::onAvgRange() {
-    bool ok;
-    QString input = QInputDialog::getText(this, "Promedio de Rango",
-        "Ingresa rango (ej: A1:C3):", QLineEdit::Normal, "", &ok);
-    if (!ok || input.isEmpty()) return;
-
-    int r1, c1, r2, c2;
-    if (!parseRange(input, r1, c1, r2, c2)) {
-        statusLabel->setText("Rango invalido");
-        return;
-    }
-
-    double result = sheet->avgRange(r1, c1, r2, c2);
-    QMessageBox::information(this, "Resultado",
-        QString("PROMEDIO(%1) = %2").arg(input).arg(result));
-    statusLabel->setText(QString("PROMEDIO(%1) = %2").arg(input).arg(result));
-}
-
-void MainWindow::onMaxRange() {
-    bool ok;
-    QString input = QInputDialog::getText(this, "Máximo de Rango",
-        "Ingresa rango (ej: A1:C3):", QLineEdit::Normal, "", &ok);
-    if (!ok || input.isEmpty()) return;
-
-    int r1, c1, r2, c2;
-    if (!parseRange(input, r1, c1, r2, c2)) {
-        statusLabel->setText("Rango invalido");
-        return;
-    }
-
-    double result = sheet->maxRange(r1, c1, r2, c2);
-    QMessageBox::information(this, "Resultado",
-        QString("MÁXIMO(%1) = %2").arg(input).arg(result));
-    statusLabel->setText(QString("MÁXIMO(%1) = %2").arg(input).arg(result));
-}
-
-void MainWindow::onMinRange() {
-    bool ok;
-    QString input = QInputDialog::getText(this, "Mínimo de Rango",
-        "Ingresa rango (ej: A1:C3):", QLineEdit::Normal, "", &ok);
-    if (!ok || input.isEmpty()) return;
-
-    int r1, c1, r2, c2;
-    if (!parseRange(input, r1, c1, r2, c2)) {
-        statusLabel->setText("Rango invalido");
-        return;
-    }
-
-    double result = sheet->minRange(r1, c1, r2, c2);
-    QMessageBox::information(this, "Resultado",
-        QString("MÍNIMO(%1) = %2").arg(input).arg(result));
-    statusLabel->setText(QString("MÍNIMO(%1) = %2").arg(input).arg(result));
-}
-
-void MainWindow::onSumRange() {
-    bool ok;
-    QString input = QInputDialog::getText(this, "Suma de Rango",
-        "Ingresa rango (ej: A1:C3):", QLineEdit::Normal, "", &ok);
-    if (!ok || input.isEmpty()) return;
-
-    int r1, c1, r2, c2;
-    if (!parseRange(input, r1, c1, r2, c2)) {
-        statusLabel->setText("Rango invalido");
-        return;
-    }
-
-    double result = sheet->sumRange(r1, c1, r2, c2);
-    QMessageBox::information(this, "Resultado",
-        QString("SUMA(%1) = %2").arg(input).arg(result));
-    statusLabel->setText(QString("SUMA(%1) = %2").arg(input).arg(result));
 }
