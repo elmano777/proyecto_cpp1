@@ -2,13 +2,15 @@
 
 #include <string>
 
-struct Cell {
-    int row;
-    int col;
-    std::string value;
-    Cell* nextInRow;
-    Cell* nextInCol;
+using namespace std;
 
-    Cell(int r, int c, const std::string& v)
-        : row(r), col(c), value(v), nextInRow(nullptr), nextInCol(nullptr) {}
+struct Cell {
+  int row;
+  int col;
+  string value;
+  Cell *nextInRow;
+  Cell *nextInCol;
+
+  Cell(int r, int c, const string &v)
+      : row(r), col(c), value(v), nextInRow(nullptr), nextInCol(nullptr) {}
 };
