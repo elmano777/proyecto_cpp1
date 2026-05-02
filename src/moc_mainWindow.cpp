@@ -38,36 +38,10 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
 {
     namespace QMC = QtMocConstants;
     QtMocHelpers::StringRefStorage qt_stringData {
-        "MainWindow",
-        "onCellChanged",
-        "",
-        "row",
-        "col",
-        "onDeleteRow",
-        "onDeleteCol",
-        "onSumRange",
-        "onAvgRange",
-        "onMaxRange",
-        "onMinRange"
+        "MainWindow"
     };
 
     QtMocHelpers::UintData qt_methods {
-        // Slot 'onCellChanged'
-        QtMocHelpers::SlotData<void(int, int)>(1, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 3 }, { QMetaType::Int, 4 },
-        }}),
-        // Slot 'onDeleteRow'
-        QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onDeleteCol'
-        QtMocHelpers::SlotData<void()>(6, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onSumRange'
-        QtMocHelpers::SlotData<void()>(7, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onAvgRange'
-        QtMocHelpers::SlotData<void()>(8, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onMaxRange'
-        QtMocHelpers::SlotData<void()>(9, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onMinRange'
-        QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -89,18 +63,10 @@ Q_CONSTINIT const QMetaObject MainWindow::staticMetaObject = { {
 void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     auto *_t = static_cast<MainWindow *>(_o);
-    if (_c == QMetaObject::InvokeMetaMethod) {
-        switch (_id) {
-        case 0: _t->onCellChanged((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
-        case 1: _t->onDeleteRow(); break;
-        case 2: _t->onDeleteCol(); break;
-        case 3: _t->onSumRange(); break;
-        case 4: _t->onAvgRange(); break;
-        case 5: _t->onMaxRange(); break;
-        case 6: _t->onMinRange(); break;
-        default: ;
-        }
-    }
+    (void)_t;
+    (void)_c;
+    (void)_id;
+    (void)_a;
 }
 
 const QMetaObject *MainWindow::metaObject() const
@@ -119,18 +85,6 @@ void *MainWindow::qt_metacast(const char *_clname)
 int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QMainWindow::qt_metacall(_c, _id, _a);
-    if (_id < 0)
-        return _id;
-    if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 7)
-            qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
-    }
-    if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 7)
-            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 7;
-    }
     return _id;
 }
 QT_WARNING_POP
