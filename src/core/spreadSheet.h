@@ -1,3 +1,14 @@
+/*
+ * Define la clase SpreadSheet, que representa una hoja de cálculo
+ * implementada como una matriz dispersa.
+ *
+ * Responsabilidades principales:
+ * - Gestionar inserción, modificación y eliminación de celdas
+ * - Mantener la estructura enlazada por filas y columnas
+ * - Proveer operaciones como suma, promedio, mínimo y máximo
+ * - Validar rangos y coordenadas
+ */
+
 #pragma once
 
 #include "cell.h"
@@ -58,5 +69,4 @@ public:
 
   int numericCountRange(int r1, int c1, int r2, int c2) const;
   vector<CellInfo> getOccupiedCells() const;
-  void printSheet() const;
 };

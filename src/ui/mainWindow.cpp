@@ -1,3 +1,17 @@
+/*
+ * Implementa la lógica de la interfaz gráfica (MainWindow).
+ *
+ * Contiene:
+ * - Construcción y organización de la UI (layouts, botones, tabla)
+ * - Manejo de señales y slots (eventos de Qt)
+ * - Sincronización entre la interfaz y la estructura de datos (SpreadSheet)
+ * - Procesamiento de acciones del usuario (insertar, eliminar, consultar)
+ * - Evaluación básica de fórmulas
+ *
+ * Este archivo actúa como puente entre el usuario y la lógica interna
+ * del programa.
+ */
+
 #include "mainWindow.h"
 
 #include <QBrush>
@@ -69,13 +83,15 @@ void MainWindow::setupUI() {
   QPushButton *deleteRowButton = new QPushButton("Eliminar fila", this);
   QPushButton *deleteColButton = new QPushButton("Eliminar columna", this);
   QPushButton *deleteRangeButton = new QPushButton("Eliminar rango", this);
+  QPushButton *avgRowButton = new QPushButton("Promedio fila", this);
+  QPushButton *avgColButton = new QPushButton("Promedio columna", this);
 
-  QPushButton *sumRowButton = new QPushButton("SUMA fila", this);
-  QPushButton *sumColButton = new QPushButton("SUMA columna", this);
-  QPushButton *sumRangeButton = new QPushButton("SUMA rango", this);
-  QPushButton *avgRangeButton = new QPushButton("PROMEDIO rango", this);
-  QPushButton *maxRangeButton = new QPushButton("MÁX rango", this);
-  QPushButton *minRangeButton = new QPushButton("MÍN rango", this);
+  QPushButton *sumRowButton = new QPushButton("Suma fila", this);
+  QPushButton *sumColButton = new QPushButton("Suma columna", this);
+  QPushButton *sumRangeButton = new QPushButton("Suma rango", this);
+  QPushButton *avgRangeButton = new QPushButton("Promedio rango", this);
+  QPushButton *maxRangeButton = new QPushButton("Max rango", this);
+  QPushButton *minRangeButton = new QPushButton("Min rango", this);
 
   buttonLayout->addWidget(consultButton, 0, 0);
   buttonLayout->addWidget(insertCellButton, 0, 1);
@@ -84,7 +100,8 @@ void MainWindow::setupUI() {
   buttonLayout->addWidget(deleteRowButton, 2, 0);
   buttonLayout->addWidget(deleteColButton, 2, 1);
   buttonLayout->addWidget(deleteRangeButton, 2, 2);
-
+  buttonLayout->addWidget(avgRowButton, 0, 4);
+  buttonLayout->addWidget(avgColButton, 0, 5);
   buttonLayout->addWidget(sumRowButton, 1, 0);
   buttonLayout->addWidget(sumColButton, 1, 1);
   buttonLayout->addWidget(sumRangeButton, 1, 2);
@@ -126,6 +143,8 @@ void MainWindow::setupUI() {
   connect(avgRangeButton, &QPushButton::clicked, this, &MainWindow::onAvgRange);
   connect(maxRangeButton, &QPushButton::clicked, this, &MainWindow::onMaxRange);
   connect(minRangeButton, &QPushButton::clicked, this, &MainWindow::onMinRange);
+  connect(avgRowButton, &QPushButton::clicked, this, &MainWindow::onAvgRow);
+  connect(avgColButton, &QPushButton::clicked, this, &MainWindow::onAvgCol);
 }
 
 void MainWindow::onCellChanged(int row, int col) {
@@ -213,7 +232,7 @@ void MainWindow::onConsultCell() {
   int row = 0;
   int col = 0;
   if (!parseCellRef(input, row, col)) {
-    showMessage("Referencia inválida", "Usa una referencia como A1, B3 o C10.");
+    showMessage("Celda inválida", "Coloque una celda válida");
     return;
   }
 
@@ -288,11 +307,17 @@ void MainWindow::onModifyCell() {
 }
 
 void MainWindow::onDeleteCell() {
-  int row = table->currentRow();
-  int col = table->currentColumn();
-  if (row < 0 || col < 0) {
-    showMessage("Sin celda seleccionada",
-                "Selecciona una celda para eliminarla.");
+  bool ok = false;
+  QString input = QInputDialog::getText(
+      this, "Eliminar celda", "Referencia (ej: B3):", QLineEdit::Normal, "A1",
+      &ok);
+  if (!ok)
+    return;
+
+  int row = 0;
+  int col = 0;
+  if (!parseCellRef(input, row, col)) {
+    showMessage("Celda inválida", "Esta celda esta fuera del alcance.");
     return;
   }
 
@@ -361,9 +386,16 @@ void MainWindow::onSumRow() {
     return;
   }
 
+  if (sheet->numericCountRange(row, 0, row, TABLE_COLS - 1) == 0) {
+    showMessage(
+        "Suma fila",
+        QString("Suma(fila %1): no hay celdas numéricas.").arg(row + 1));
+    return;
+  }
+
   double result = sheet->sumRow(row);
-  showMessage("SUMA fila",
-              QString("SUMA(fila %1) = %2").arg(row + 1).arg(result));
+  showMessage("Suma fila",
+              QString("Suma(fila %1) = %2").arg(row + 1).arg(result));
 }
 
 void MainWindow::onSumCol() {
@@ -374,14 +406,21 @@ void MainWindow::onSumCol() {
     return;
   }
 
+  if (sheet->numericCountRange(0, col, TABLE_ROWS - 1, col) == 0) {
+    showMessage("Suma columna",
+                QString("Suma(columna %1): no hay celdas numéricas.")
+                    .arg(QChar('A' + col)));
+    return;
+  }
+
   double result = sheet->sumCol(col);
   showMessage(
-      "SUMA columna",
-      QString("SUMA(columna %1) = %2").arg(QChar('A' + col)).arg(result));
+      "Suma columna",
+      QString("Suma(columna %1) = %2").arg(QChar('A' + col)).arg(result));
 }
 
 void MainWindow::onSumRange() {
-  QString input = askRange("SUMA rango");
+  QString input = askRange("Suma rango");
   if (input.isEmpty())
     return;
 
@@ -391,13 +430,20 @@ void MainWindow::onSumRange() {
     return;
   }
 
+  if (sheet->numericCountRange(r1, c1, r2, c2) == 0) {
+    showMessage(
+        "Suma rango",
+        QString("Suma(%1): no hay celdas numéricas.").arg(input.toUpper()));
+    return;
+  }
+
   double result = sheet->sumRange(r1, c1, r2, c2);
-  showMessage("SUMA rango",
-              QString("SUMA(%1) = %2").arg(input.toUpper()).arg(result));
+  showMessage("Suma rango",
+              QString("Suma(%1) = %2").arg(input.toUpper()).arg(result));
 }
 
 void MainWindow::onAvgRange() {
-  QString input = askRange("PROMEDIO rango");
+  QString input = askRange("Promedio rango");
   if (input.isEmpty())
     return;
 
@@ -410,13 +456,13 @@ void MainWindow::onAvgRange() {
   auto result = sheet->averageRange(r1, c1, r2, c2);
   if (!result.has_value()) {
     showMessage(
-        "PROMEDIO rango",
-        QString("PROMEDIO(%1): no hay celdas numéricas.").arg(input.toUpper()));
+        "Promedio rango",
+        QString("Promedio(%1): no hay celdas numéricas.").arg(input.toUpper()));
     return;
   }
   showMessage(
-      "PROMEDIO rango",
-      QString("PROMEDIO(%1) = %2").arg(input.toUpper()).arg(result.value()));
+      "Promedio rango",
+      QString("Promedio(%1) = %2").arg(input.toUpper()).arg(result.value()));
 }
 
 void MainWindow::onMaxRange() {
@@ -433,16 +479,16 @@ void MainWindow::onMaxRange() {
   auto result = sheet->maxRange(r1, c1, r2, c2);
   if (!result.has_value()) {
     showMessage(
-        "MÁX rango",
-        QString("MÁX(%1): no hay celdas numéricas.").arg(input.toUpper()));
+        "Máx rango",
+        QString("Máx(%1): no hay celdas numéricas.").arg(input.toUpper()));
     return;
   }
-  showMessage("MÁX rango",
-              QString("MÁX(%1) = %2").arg(input.toUpper()).arg(result.value()));
+  showMessage("Máx rango",
+              QString("Máx(%1) = %2").arg(input.toUpper()).arg(result.value()));
 }
 
 void MainWindow::onMinRange() {
-  QString input = askRange("MÍN rango");
+  QString input = askRange("Mín rango");
   if (input.isEmpty())
     return;
 
@@ -455,12 +501,12 @@ void MainWindow::onMinRange() {
   auto result = sheet->minRange(r1, c1, r2, c2);
   if (!result.has_value()) {
     showMessage(
-        "MÍN rango",
-        QString("MÍN(%1): no hay celdas numéricas.").arg(input.toUpper()));
+        "Mín rango",
+        QString("Mín(%1): no hay celdas numéricas.").arg(input.toUpper()));
     return;
   }
-  showMessage("MÍN rango",
-              QString("MÍN(%1) = %2").arg(input.toUpper()).arg(result.value()));
+  showMessage("Mín rango",
+              QString("Mín(%1) = %2").arg(input.toUpper()).arg(result.value()));
 }
 
 void MainWindow::syncToTable() {
@@ -470,6 +516,7 @@ void MainWindow::syncToTable() {
   for (const CellInfo &cell : sheet->getOccupiedCells()) {
     QTableWidgetItem *item =
         new QTableWidgetItem(QString::fromStdString(cell.value));
+    item->setBackground(QBrush(QColor(144, 238, 144)));
     table->setItem(cell.row, cell.col, item);
   }
 }
@@ -495,6 +542,7 @@ void MainWindow::refreshCell(int row, int col) {
     item = new QTableWidgetItem();
     table->setItem(row, col, item);
   }
+  item->setBackground(QBrush(QColor(144, 238, 144)));
   item->setText(value);
 }
 
@@ -557,9 +605,9 @@ bool MainWindow::parseRange(const QString &text, int &r1, int &c1, int &r2,
   }
 
   if (r1 > r2)
-    std::swap(r1, r2);
+    swap(r1, r2);
   if (c1 > c2)
-    std::swap(c1, c2);
+    swap(c1, c2);
   return true;
 }
 
@@ -663,7 +711,7 @@ bool MainWindow::resolveOperand(const string &text, double &value) const {
     }
     try {
       size_t used = 0;
-      value = std::stod(trim(cellValue), &used);
+      value = stod(trim(cellValue), &used);
       return used == trim(cellValue).size();
     } catch (...) {
       return false;
@@ -672,7 +720,7 @@ bool MainWindow::resolveOperand(const string &text, double &value) const {
 
   try {
     size_t used = 0;
-    value = std::stod(cleaned, &used);
+    value = stod(cleaned, &used);
     return used == cleaned.size();
   } catch (...) {
     return false;
@@ -683,31 +731,52 @@ string MainWindow::trim(const string &text) {
   int left = 0;
   int right = static_cast<int>(text.size()) - 1;
 
-  while (left <= right &&
-         std::isspace(static_cast<unsigned char>(text[left]))) {
+  while (left <= right && isspace(static_cast<unsigned char>(text[left]))) {
     ++left;
   }
-  while (right >= left &&
-         std::isspace(static_cast<unsigned char>(text[right]))) {
+  while (right >= left && isspace(static_cast<unsigned char>(text[right]))) {
     --right;
   }
 
   return text.substr(left, right - left + 1);
 }
 
-static bool parseRange(const QString &input, int &r1, int &c1, int &r2,
-                       int &c2) {
-  QStringList parts = input.toUpper().split(":");
-  if (parts.size() != 2)
-    return false;
+void MainWindow::onAvgRow() {
+  int row = table->currentRow();
+  if (row < 0) {
+    showMessage("Sin fila seleccionada",
+                "Selecciona una fila para calcular el promedio.");
+    return;
+  }
 
-  auto parseRef = [](const QString &ref, int &row, int &col) {
-    if (ref.isEmpty())
-      return false;
-    col = ref[0].toLatin1() - 'A';
-    row = ref.mid(1).toInt() - 1;
-    return col >= 0 && col < 26 && row >= 0;
-  };
+  auto result = sheet->averageRow(row);
+  if (!result.has_value()) {
+    showMessage(
+        "PROMEDIO fila",
+        QString("PROMEDIO(fila %1): no hay celdas numéricas.").arg(row + 1));
+    return;
+  }
+  showMessage(
+      "PROMEDIO fila",
+      QString("PROMEDIO(fila %1) = %2").arg(row + 1).arg(result.value()));
+}
 
-  return parseRef(parts[0], r1, c1) && parseRef(parts[1], r2, c2);
+void MainWindow::onAvgCol() {
+  int col = table->currentColumn();
+  if (col < 0) {
+    showMessage("Sin columna seleccionada",
+                "Selecciona una columna para calcular el promedio.");
+    return;
+  }
+
+  auto result = sheet->averageCol(col);
+  if (!result.has_value()) {
+    showMessage("PROMEDIO columna",
+                QString("PROMEDIO(columna %1): no hay celdas numéricas.")
+                    .arg(QChar('A' + col)));
+    return;
+  }
+  showMessage("PROMEDIO columna", QString("PROMEDIO(columna %1) = %2")
+                                      .arg(QChar('A' + col))
+                                      .arg(result.value()));
 }

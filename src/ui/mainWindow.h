@@ -1,6 +1,17 @@
+/*
+ * Define la clase MainWindow, que representa la interfaz gráfica
+ * principal de la hoja de cálculo.
+ *
+ * Responsabilidades:
+ * - Gestionar los elementos visuales (tabla, botones, barra de fórmula)
+ * - Manejar eventos del usuario (clicks, edición de celdas, etc.)
+ * - Conectar la interfaz con la lógica (SpreadSheet)
+ * - Interpretar entradas del usuario (referencias de celdas, rangos, fórmulas)
+ */
+
 #pragma once
 
-#include "spreadSheet.h"
+#include "../core/spreadSheet.h"
 
 #include <QLabel>
 #include <QLineEdit>
@@ -35,6 +46,8 @@ private:
   void onAvgRange();
   void onMaxRange();
   void onMinRange();
+  void onAvgRow();
+  void onAvgCol();
 
 private:
   static constexpr int TABLE_ROWS = 50;

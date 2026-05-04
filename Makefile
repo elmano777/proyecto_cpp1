@@ -6,10 +6,10 @@ MOC = /usr/lib64/qt6/libexec/moc
 run: spreadsheet
 	./spreadsheet
 
-spreadsheet: src/main.cpp src/spreadSheet.cpp src/mainWindow.cpp src/moc_mainWindow.cpp
+spreadsheet: src/main.cpp src/core/spreadSheet.cpp src/ui/mainWindow.cpp src/moc_mainWindow.cpp
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
-src/moc_mainWindow.cpp: src/mainWindow.h
+src/moc_mainWindow.cpp: src/ui/mainWindow.h
 	$(MOC) $< -o $@
 
 clean:

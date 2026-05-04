@@ -1,8 +1,22 @@
+/*
+ * Implementa la lógica de la clase SpreadSheet.
+ *
+ * Contiene:
+ * - Manejo de memoria (creación y destrucción de celdas)
+ * - Inserción y eliminación en la estructura enlazada
+ * - Búsqueda eficiente de celdas
+ * - Operaciones sobre datos (sumas, promedios, etc.)
+ * - Funciones auxiliares como parseo de números y limpieza de texto
+ *
+ * La estructura utilizada es una matriz dispersa enlazada por filas
+ * y columnas, lo que permite ahorrar memoria al almacenar únicamente
+ * las celdas que contienen valores.
+ */
+
 #include "spreadSheet.h"
 
 #include <algorithm>
 #include <cctype>
-#include <iostream>
 #include <limits>
 #include <stdexcept>
 
@@ -475,17 +489,4 @@ vector<CellInfo> SpreadSheet::getOccupiedCells() const {
     }
   }
   return cells;
-}
-
-void SpreadSheet::printSheet() const {
-  cout << "\n=== SpreadSheet ===\n";
-  for (int r = 0; r < maxRows; ++r) {
-    Cell *current = rowHeads[r];
-    while (current != nullptr) {
-      cout << "[" << current->row << "," << current->col
-           << "] = " << current->value << "\n";
-      current = current->nextInRow;
-    }
-  }
-  cout << "===================\n";
 }

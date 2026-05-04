@@ -3,3 +3,9 @@ spreadsheet
 .cache
 .zed
 .idea
+.idea
+.build
+.cmake-build-debug
+/idea
+./idea
+idea
