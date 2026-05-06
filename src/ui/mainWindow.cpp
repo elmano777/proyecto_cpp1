@@ -54,6 +54,7 @@ void MainWindow::setupUI() {
   QHBoxLayout *formulaLayout = new QHBoxLayout();
   QLabel *fxLabel = new QLabel("fx:", this);
   formulaBar = new QLineEdit(this);
+  formulaBar->setObjectName("formulaBar");
   formulaBar->setPlaceholderText(
       "Selecciona una celda y escribe valor o fórmula. Ej: =A1+B1, =A1*2");
   QPushButton *applyFormulaButton = new QPushButton("Aplicar", this);
@@ -70,7 +71,7 @@ void MainWindow::setupUI() {
   }
   table->setHorizontalHeaderLabels(colHeaders);
   table->horizontalHeader()->setDefaultSectionSize(85);
-  table->verticalHeader()->setDefaultSectionSize(25);
+  table->verticalHeader()->setDefaultSectionSize(30);
   table->setAlternatingRowColors(true);
   mainLayout->addWidget(table);
 
@@ -112,8 +113,188 @@ void MainWindow::setupUI() {
   mainLayout->addLayout(buttonLayout);
 
   statusLabel = new QLabel(
-      "Listo. Las celdas ocupadas se resaltan en verde claro.", this);
+      "Las celdas ocupadas se resaltan en verde claro.", this);
   mainLayout->addWidget(statusLabel);
+
+  // ==========================
+  // TEMA VISUAL AMIGABLE
+  // ==========================
+
+  central->setObjectName("centralWidget");
+  statusLabel->setObjectName("statusLabel");
+
+  applyFormulaButton->setProperty("class", "primary");
+
+  deleteCellButton->setProperty("class", "danger");
+  deleteRowButton->setProperty("class", "danger");
+  deleteColButton->setProperty("class", "danger");
+  deleteRangeButton->setProperty("class", "danger");
+
+  mainLayout->setContentsMargins(14, 12, 14, 12);
+  mainLayout->setSpacing(10);
+  formulaLayout->setSpacing(8);
+  buttonLayout->setHorizontalSpacing(10);
+  buttonLayout->setVerticalSpacing(8);
+
+  table->setShowGrid(true);
+  table->horizontalHeader()->setHighlightSections(false);
+  table->verticalHeader()->setHighlightSections(false);
+
+  this->setStyleSheet(R"(
+    QMainWindow {
+      background-color: #F4FBFC;
+      color: #12313D;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    QWidget#centralWidget {
+      background-color: #F4FBFC;
+    }
+
+    QLabel {
+      color: #12313D;
+      font-size: 13px;
+    }
+
+    QLabel#statusLabel {
+      color: #17465A;
+      font-size: 13px;
+      padding: 4px 2px;
+    }
+
+    QLineEdit#formulaBar {
+    background-color: #FFFFFF;
+    color: #243B53;
+    border: 1px solid #BBD8DF;
+    border-radius: 9px;
+    padding: 8px 12px;
+    font-size: 14px;
+    selection-background-color: #BDEEF3;
+  }
+
+  QLineEdit#formulaBar:focus {
+    border: 2px solid #00A6B4;
+    background-color: #FFFFFF;
+  }
+
+  QTableWidget QLineEdit {
+    background-color: #FFFFFF;
+    color: #16323D;
+    border: 1px solid #00A6B4;
+    border-radius: 0px;
+    padding: 0px 4px;
+    margin: 0px;
+    font-size: 13px;
+    min-height: 0px;
+  }
+
+    QPushButton {
+      background-color: #EEF9FB;
+      color: #14607A;
+      border: 1px solid #BBDDE5;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-weight: bold;
+      min-height: 22px;
+    }
+
+    QPushButton:hover {
+      background-color: #DDF4F8;
+      border: 1px solid #7FC6D4;
+    }
+
+    QPushButton:pressed {
+      background-color: #C8EEF4;
+    }
+
+    QPushButton[class="primary"] {
+      background-color: #00A6B4;
+      color: white;
+      border: 1px solid #008A96;
+    }
+
+    QPushButton[class="primary"]:hover {
+      background-color: #008F9B;
+    }
+
+    QPushButton[class="danger"] {
+      background-color: #FFF1F2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+    }
+
+    QPushButton[class="danger"]:hover {
+      background-color: #FFE4E6;
+      border: 1px solid #FDA4AF;
+    }
+
+    QTableWidget {
+      background-color: #FFFFFF;
+      alternate-background-color: #F3F9FB;
+      color: #16323D;
+      gridline-color: #D7E8EC;
+      border: 1px solid #BBD8DF;
+      border-radius: 8px;
+      selection-background-color: #D7ECFF;
+      selection-color: #0F172A;
+      font-size: 14px;
+    }
+
+    QTableWidget::item {
+      padding: 4px;
+    }
+
+    QTableWidget::item:selected {
+      background-color: #D7ECFF;
+      color: #0F172A;
+      border: 1px solid #2D8CFF;
+    }
+
+    QHeaderView::section {
+      background-color: #E8F6F8;
+      color: #16323D;
+      padding: 6px;
+      border: none;
+      border-right: 1px solid #CFE3E8;
+      border-bottom: 1px solid #CFE3E8;
+      font-weight: bold;
+    }
+
+    QTableCornerButton::section {
+      background-color: #E8F6F8;
+      border: none;
+      border-right: 1px solid #CFE3E8;
+      border-bottom: 1px solid #CFE3E8;
+    }
+
+    QScrollBar:vertical {
+      background-color: #F0F8FA;
+      width: 12px;
+      margin: 0px;
+      border-radius: 6px;
+    }
+
+    QScrollBar::handle:vertical {
+      background-color: #8FC6D1;
+      min-height: 35px;
+      border-radius: 6px;
+    }
+
+    QScrollBar::handle:vertical:hover {
+      background-color: #5FAEBE;
+    }
+
+    QScrollBar::add-line:vertical,
+    QScrollBar::sub-line:vertical {
+      height: 0px;
+    }
+
+    QInputDialog,
+    QMessageBox {
+      background-color: #F4FBFC;
+      color: #12313D;
+    }
+  )");
 
   connect(table, &QTableWidget::cellChanged, this, &MainWindow::onCellChanged);
   connect(table, &QTableWidget::currentCellChanged, this,
@@ -516,7 +697,8 @@ void MainWindow::syncToTable() {
   for (const CellInfo &cell : sheet->getOccupiedCells()) {
     QTableWidgetItem *item =
         new QTableWidgetItem(QString::fromStdString(cell.value));
-    item->setBackground(QBrush(QColor(144, 238, 144)));
+    item->setBackground(QBrush(QColor("#D9FBE1")));
+    item->setForeground(QBrush(QColor("#166534")));
     table->setItem(cell.row, cell.col, item);
   }
 }
@@ -542,7 +724,9 @@ void MainWindow::refreshCell(int row, int col) {
     item = new QTableWidgetItem();
     table->setItem(row, col, item);
   }
-  item->setBackground(QBrush(QColor(144, 238, 144)));
+  item->setBackground(QBrush(QColor("#D9FBE1")));
+  item->setForeground(QBrush(QColor("#166534")));
+  item->setText(value);
   item->setText(value);
 }
 
